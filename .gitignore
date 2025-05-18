@@ -144,3 +144,7 @@ rabbitmq_data/
 # Other
 lana-ai-partner-firebase-adminsdk-fbsvc-de1fba1cb7.json # Sensitive SDK file
 *.db # General rule for SQLite databases if not in db_data
+
+# Cline-specific files (AI development context)
+.clinerules
+memory-bank/
