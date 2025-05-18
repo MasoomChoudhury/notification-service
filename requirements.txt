@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+aiosqlite
+aio_pika
+aiosmtplib
+pydantic
+pydantic-settings
+python-dotenv
+passlib[bcrypt]
+email-validator
+phonenumbers
+boto3
+twilio
+httpx

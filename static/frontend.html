@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Hub Demo - Masoom K. Choudhury</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://cdn.prod.website-files.com/66d402ff17bc21523bb8cd7e/66de9f6f9561ce0dc6f92c15_bg-hero-pep.avif');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Keeps the background fixed during scroll */
+            background-color: #e6f7f0; /* Fallback color if image fails to load */
+        }
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border-left-color: white;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        details > summary {
+            list-style: none; /* Remove default marker */
+            cursor: pointer;
+        }
+        details > summary::-webkit-details-marker {
+            display: none; /* Remove default marker for Chrome/Safari */
+        }
+        details summary::after {
+            content: ' ▼'; /* Down arrow */
+            font-size: 0.8em;
+            margin-left: 0.5rem;
+        }
+        details[open] summary::after {
+            content: ' ▲'; /* Up arrow */
+        }
+        /* Visually hide the radio button but keep it accessible */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        .radio-label-selected {
+            background-color: #e0fff0; /* Light green background for selected */
+            border-color: #007a7a; /* Teal border for selected */
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen antialiased text-gray-800 py-8 md:py-12">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl w-full">
+
+        <header class="text-center mb-8 md:mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-[rgb(28,58,55)]">Notification Hub Demo</h1>
+            <p class="mt-2 text-sm md:text-base text-[rgb(28,58,55)]">Pepsales AI Internship Assignment by Masoom Kumar Choudhury</p>
+        </header>
+
+        <main class="bg-white p-6 md:p-8 rounded-xl shadow-2xl">
+            <form id="notificationForm">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Notification Type:</label>
+                        <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+                            <label id="labelTypeSms" for="typeSms" class="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:border-[#007a7a] cursor-pointer flex-1 radio-label-selected">
+                                <input type="radio" name="notificationType" value="SMS" id="typeSms" class="sr-only" checked>
+                                <span class="text-2xl">📱</span>
+                                <span class="mt-1 text-sm font-medium text-gray-700">SMS</span>
+                            </label>
+                            <label id="labelTypeEmail" for="typeEmail" class="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:border-[#007a7a] cursor-pointer flex-1">
+                                <input type="radio" name="notificationType" value="EMAIL" id="typeEmail" class="sr-only">
+                                <span class="text-2xl">📧</span>
+                                <span class="mt-1 text-sm font-medium text-gray-700">Email</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="recipientAddress" class="block text-sm font-semibold text-gray-700 mb-1">Recipient (India +91):</label>
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center px-3 py-2.5 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-md">+91</span>
+                            <input type="tel" id="recipientAddress" name="recipientAddress" required
+                                   class="block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007a7a] focus:border-[#007a7a] sm:text-sm"
+                                   placeholder="Enter 10-digit mobile number" maxlength="10">
+                        </div>
+                    </div>
+
+                    <div id="subjectGroup" class="mt-4 hidden">
+                        <label for="subject" class="block text-sm font-semibold text-gray-700 mb-1">Subject:</label>
+                        <input type="text" id="subject" name="subject"
+                               class="mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007a7a] focus:border-[#007a7a] sm:text-sm"
+                               placeholder="Enter email subject">
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-semibold text-gray-700 mb-1">Message:</label>
+                        <textarea id="message" name="message" rows="4" required
+                                  class="mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007a7a] focus:border-[#007a7a] sm:text-sm"
+                                  placeholder="Type your notification message here..."></textarea>
+                    </div>
+                    
+                    <div id="smsGatewaySelectionGroup">
+                        <label for="gatewaySelect" class="block text-sm font-semibold text-gray-700 mb-1">SMS Gateway:</label>
+                        <select id="gatewaySelect" name="gatewaySelect"
+                                class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#007a7a] focus:border-[#007a7a] sm:text-sm rounded-md shadow-sm">
+                            <option value="TEXTBEE" selected>Textbee</option>
+                            <option value="TWILIO">Twilio</option>
+                            <option value="AWS_SNS">Amazon SNS</option>
+                        </select>
+                    </div>
+
+                    <div id="smsGatewayStatusContainer" class="hidden"> 
+                        <details class="mt-4 border border-gray-300 rounded-md">
+                            <summary class="p-3 font-semibold text-gray-700 text-sm bg-gray-50 rounded-t-md hover:bg-gray-100 flex justify-between items-center">
+                                SMS Gateway Status & Testing Notes
+                            </summary>
+                            <div class="p-4 bg-[#e0fff0] border-t border-gray-300 text-[rgb(28,58,55)] rounded-b-md text-sm space-y-2">
+                                <p class="mb-2 text-xs">Textbee is fully configured for live testing. For other gateways and email, please see notes below. The integration logic can be reviewed in the codebase, or a live demo with verified test numbers/emails can be arranged upon request.</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li><strong>Textbee:</strong> Integrated and working successfully for this demo.</li>
+                                    <li><strong>Twilio:</strong> Integrated. Requires a paid plan for full functionality beyond trial limits. Credentials (Account SID, Auth Token, Sender ID/Messaging Service SID) must be set in <code>.env</code>.</li>
+                                    <li><strong>Amazon SNS (SMS):</strong> Integrated. The AWS account is in the SMS sandbox, limiting delivery to AWS-verified phone numbers only.</li>
+                                </ul>
+                                <p class="mt-3 text-xs"><strong>Email (AWS SES):</strong> Integrated. The AWS account is in the SES sandbox, limiting sending to AWS-verified email addresses/domains only.</p>
+                                <p class="mt-2 text-xs">To test Twilio, Amazon SNS SMS, or AWS SES Email, please provide a number/email for verification, or we can review the code implementation.</p>
+                            </div>
+                        </details>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="submit" id="sendButton"
+                                class="w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#007a7a] hover:bg-[#005f5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007a7a] disabled:opacity-50 transition duration-150 ease-in-out">
+                            <span id="buttonText">Send Notification</span>
+                            <span id="buttonSpinner" class="spinner ml-2 hidden"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="responseArea" class="mt-6 text-sm"></div>
+
+            <!-- New Section: Send Contact to Project Owner -->
+            <div class="mt-10 pt-6 border-t border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Help Test Other Gateways/Email?</h2>
+                <p class="text-sm text-gray-600 mb-4">
+                    If you'd like to test Twilio, Amazon SNS (SMS), or AWS SES (Email), these services often require phone numbers or email addresses to be pre-verified due to sandbox limitations. 
+                    You can send your contact detail (phone or email) to the project owner, who can then add it for verification.
+                </p>
+                <div class="space-y-3">
+                    <div>
+                        <label for="testerContact" class="block text-sm font-medium text-gray-700">Your Email or Phone for Verification:</label>
+                        <input type="text" id="testerContact" name="testerContact"
+                               class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007a7a] focus:border-[#007a7a] sm:text-sm"
+                               placeholder="e.g., recruiter@example.com or +15551234567">
+                    </div>
+                    <div>
+                        <button type="button" id="sendContactButton"
+                                class="w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#007a7a] hover:bg-[#005f5f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007a7a] disabled:opacity-50 transition duration-150 ease-in-out">
+                            <span id="sendContactButtonText">Send My Contact to Project Owner</span>
+                            <span id="sendContactSpinner" class="spinner ml-2 hidden"></span>
+                        </button>
+                    </div>
+                </div>
+                <div id="contactResponseArea" class="mt-4 text-sm"></div>
+            </div>
+        </main>
+
+        <footer class="text-center text-xs text-gray-500 mt-10 py-4">
+            <p>&copy; <span id="currentYear"></span> Masoom Kumar Choudhury. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const notificationForm = document.getElementById('notificationForm');
+            const recipientAddressLabel = document.querySelector('label[for="recipientAddress"]'); 
+            const recipientAddressInput = document.getElementById('recipientAddress');
+            const recipientPhonePrefix = recipientAddressInput.previousElementSibling; 
+
+            const subjectGroup = document.getElementById('subjectGroup');
+            const subjectInput = document.getElementById('subject');
+            const messageInput = document.getElementById('message');
+            
+            const typeEmailRadio = document.getElementById('typeEmail');
+            const typeSmsRadio = document.getElementById('typeSms');
+            const labelTypeSms = document.getElementById('labelTypeSms');
+            const labelTypeEmail = document.getElementById('labelTypeEmail');
+
+            const sendButton = document.getElementById('sendButton');
+            const buttonText = document.getElementById('buttonText');
+            const buttonSpinner = document.getElementById('buttonSpinner');
+            const responseArea = document.getElementById('responseArea');
+            const currentYearSpan = document.getElementById('currentYear');
+            
+            const gatewaySelectDropdown = document.getElementById('gatewaySelect');
+            const smsGatewaySelectionGroup = document.getElementById('smsGatewaySelectionGroup');
+            const smsGatewayStatusContainer = document.getElementById('smsGatewayStatusContainer'); 
+
+            const testerContactInput = document.getElementById('testerContact');
+            const sendContactButton = document.getElementById('sendContactButton');
+            const sendContactButtonText = document.getElementById('sendContactButtonText');
+            const sendContactSpinner = document.getElementById('sendContactSpinner');
+            const contactResponseArea = document.getElementById('contactResponseArea');
+
+            currentYearSpan.textContent = new Date().getFullYear();
+            
+            function styleSelectedLabel() {
+                if (typeSmsRadio.checked) {
+                    labelTypeSms.classList.add('radio-label-selected');
+                    labelTypeEmail.classList.remove('radio-label-selected');
+                } else {
+                    labelTypeEmail.classList.add('radio-label-selected');
+                    labelTypeSms.classList.remove('radio-label-selected');
+                }
+            }
+            
+            updateFormForNotificationType(); // Initial call
+            styleSelectedLabel(); // Initial styling
+
+            typeEmailRadio.addEventListener('change', () => { 
+                updateFormForNotificationType();
+                styleSelectedLabel();
+            });
+            typeSmsRadio.addEventListener('change', () => {
+                updateFormForNotificationType();
+                styleSelectedLabel();
+            });
+            
+            notificationForm.addEventListener('submit', handleNotificationFormSubmit);
+            if(sendContactButton) {
+                sendContactButton.addEventListener('click', handleSendContactSubmit);
+            }
+
+            async function handleNotificationFormSubmit(event) {
+                event.preventDefault();
+                clearResponse(responseArea);
+
+                if (!recipientAddressInput.value.trim()) {
+                    displayResponse(responseArea, 'Recipient address is required.', true); return;
+                }
+                if (typeEmailRadio.checked && !subjectInput.value.trim()) {
+                    displayResponse(responseArea, 'Subject is required for email.', true); return;
+                }
+                if (!messageInput.value.trim()) {
+                    displayResponse(responseArea, 'Message is required.', true); return;
+                }
+                if (typeEmailRadio.checked && !isValidEmail(recipientAddressInput.value.trim())) {
+                    displayResponse(responseArea, 'Please enter a valid email address.', true); return;
+                }
+                if (typeSmsRadio.checked && !isValidPhone(recipientAddressInput.value.trim())) {
+                    displayResponse(responseArea, 'Please enter a valid 10-digit mobile number.', true); return;
+                }
+
+                sendButton.disabled = true;
+                buttonText.textContent = 'Sending...';
+                buttonSpinner.classList.remove('hidden');
+
+                const channel = typeEmailRadio.checked ? "EMAIL" : "SMS";
+                const payload = {
+                    channel: channel,
+                    message_body: messageInput.value.trim()
+                };
+
+                if (channel === "EMAIL") {
+                    payload.recipient_email = recipientAddressInput.value.trim();
+                    payload.subject = subjectInput.value.trim();
+                } else { // SMS
+                    payload.recipient_phone = "+91" + recipientAddressInput.value.trim(); 
+                    payload.sms_provider = gatewaySelectDropdown.value; 
+                }
+                
+                try {
+                    const apiEndpoint = '/notification-service/notifications'; 
+                    const response = await fetch(apiEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        let successMessage = data.message || 'Notification request processed successfully.';
+                        if (data.notificationId) successMessage += ` ID: ${data.notificationId}`;
+                        displayResponse(responseArea, successMessage, false);
+                    } else {
+                        const errorMessage = data.detail || data.message || `Error: ${response.status} ${response.statusText}`;
+                        displayResponse(responseArea, errorMessage, true);
+                    }
+                } catch (error) {
+                    console.error('API Call Error:', error);
+                    displayResponse(responseArea, 'An unexpected error occurred. Please check the console.', true);
+                } finally {
+                    sendButton.disabled = false;
+                    buttonText.textContent = 'Send Notification';
+                    buttonSpinner.classList.add('hidden');
+                }
+            }
+
+            async function handleSendContactSubmit() {
+                clearResponse(contactResponseArea);
+                const contactDetail = testerContactInput.value.trim();
+
+                if (!contactDetail) {
+                    displayResponse(contactResponseArea, 'Please enter your email or phone number.', true);
+                    return;
+                }
+
+                sendContactButton.disabled = true;
+                sendContactButtonText.textContent = 'Sending...';
+                sendContactSpinner.classList.remove('hidden');
+
+                try {
+                    const apiEndpoint = '/notification-service/contact-owner'; 
+                    const response = await fetch(apiEndpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contact_detail: contactDetail })
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        displayResponse(contactResponseArea, data.message || 'Contact detail sent successfully to project owner!', false);
+                        testerContactInput.value = ''; 
+                    } else {
+                        const errorMessage = data.detail || data.message || `Error: ${response.status} ${response.statusText}`;
+                        displayResponse(contactResponseArea, errorMessage, true);
+                    }
+                } catch (error) {
+                    console.error('Contact Owner API Call Error:', error);
+                    displayResponse(contactResponseArea, 'An unexpected error occurred sending contact. Please check the console.', true);
+                } finally {
+                    sendContactButton.disabled = false;
+                    sendContactButtonText.textContent = 'Send My Contact to Project Owner';
+                    sendContactSpinner.classList.add('hidden');
+                }
+            }
+
+            function updateFormForNotificationType() {
+                const isEmail = typeEmailRadio.checked;
+                
+                subjectGroup.classList.toggle('hidden', !isEmail);
+                subjectInput.required = isEmail;
+                
+                recipientAddressLabel.textContent = isEmail ? "Recipient Email:" : "Recipient (India +91):";
+                recipientAddressInput.placeholder = isEmail ? "Enter recipient's email address" : "Enter 10-digit mobile number";
+                recipientAddressInput.type = isEmail ? "email" : "tel";
+
+                if (recipientPhonePrefix && recipientPhonePrefix.tagName === 'SPAN') {
+                    recipientPhonePrefix.classList.toggle('hidden', isEmail);
+                }
+                if(isEmail) {
+                    recipientAddressInput.classList.remove('rounded-r-md');
+                    recipientAddressInput.classList.add('rounded-md');
+                } else {
+                    recipientAddressInput.classList.add('rounded-r-md');
+                    recipientAddressInput.classList.remove('rounded-md');
+                }
+                
+                smsGatewaySelectionGroup.classList.toggle('hidden', isEmail); 
+                smsGatewayStatusContainer.classList.toggle('hidden', isEmail); 
+            }
+
+            function displayResponse(area, message, isError) {
+                area.innerHTML = ''; 
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-md shadow-sm ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`;
+                div.textContent = message;
+                area.appendChild(div);
+            }
+
+            function clearResponse(area) { area.innerHTML = ''; }
+            function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+            function isValidPhone(phone) { return /^[0-9]{10}$/.test(phone); } 
+        });
+    </script>
+</body>
+</html>

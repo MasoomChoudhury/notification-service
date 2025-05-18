@@ -1,0 +1,85 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: notification_rabbitmq
+    ports:
+      - "5672:5672"  # AMQP port
+      - "15672:15672" # Management UI port
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq # Persist RabbitMQ data
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - notification_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification_app
+    env_file:
+      - .env # Explicitly load .env file
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app # Mount app code for live reloading
+      - ./db_data:/app/data # Mount SQLite database directory
+      - ./static:/app/static:ro # Mount static directory as read-only
+    environment:
+      # These will be overridden by .env if present there, otherwise defaults are used or error if not set
+      - DATABASE_URL=sqlite+aiosqlite:///./data/notifications.db 
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - API_BASE_PATH=/notification-service
+      - PYTHONUNBUFFERED=1 
+      - EMAIL_SENDER=${EMAIL_SENDER:-notifications@example.com} # Will be used by SES
+      # SMTP_HOST and SMTP_PORT removed
+      # AWS SNS Environment Variables
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION_NAME=${AWS_REGION_NAME:-us-east-1}
+      - SNS_SENDER_ID=${SNS_SENDER_ID}
+      - SNS_SMS_TYPE=${SNS_SMS_TYPE:-Transactional}
+      - SNS_PLATFORM_APPLICATION_ARN_ANDROID=${SNS_PLATFORM_APPLICATION_ARN_ANDROID} # For Push
+      # Twilio Environment Variables (re-added)
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_MESSAGING_SERVICE_SID=${TWILIO_MESSAGING_SERVICE_SID}
+      - TWILIO_FROM_NUMBER=${TWILIO_FROM_NUMBER}
+      # Textbee Environment Variables
+      - TEXTBEE_API_KEY=${TEXTBEE_API_KEY:-}
+      - TEXTBEE_DEVICE_ID=${TEXTBEE_DEVICE_ID:-}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      # mailhog: # MailHog dependency can be removed if SES is primary
+      #   condition: service_started # MailHog dependency removed
+    networks:
+      - notification_network
+    # To run the worker alongside the API server in the same container for simplicity in dev:
+    command: sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload & echo 'Waiting for API server to start...' && sleep 15 && echo 'Starting worker...' && python -m app.worker"
+    # The 'sleep 15' is a crude way to wait for the API server and RabbitMQ to be ready.
+    # A more robust solution for production would be a separate worker service or a process manager.
+
+# mailhog: # Commenting out MailHog service as we are moving to AWS SES for emails
+#   image: tsle/mail-mailhog-arm64:latest 
+#   platform: linux/arm64 
+#   container_name: notification_mailhog
+#   ports:
+#     - "1025:1025" 
+#     - "8025:8025" 
+#   networks:
+#     - notification_network
+
+volumes:
+  rabbitmq_data:
+  db_data:
+
+networks:
+  notification_network:
+    driver: bridge

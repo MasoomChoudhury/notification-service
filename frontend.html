@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Hub Demo - Masoom K. Choudhury</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Example subtle gradient */
+            background-image: linear-gradient(to top, #f3e7e9 0%, #e3eeff 99%, #e3eeff 100%);
+        }
+        /* Small enhancement for radio buttons if needed, but Tailwind can handle most */
+        .custom-radio-label input:checked + span {
+            /* Example: border-indigo-600 bg-indigo-50 */
+        }
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border-left-color: white;
+            animation: spin 1s linear infinite;
+            display: inline-block; /* Keep it on the same line as button text */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen antialiased text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-2xl w-full">
+
+        <header class="text-center mb-8 md:mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Notification Hub Demo</h1>
+            <p class="mt-2 text-sm md:text-base text-gray-600">A Pepsales AI Internship Assignment by Masoom Kumar Choudhury</p>
+        </header>
+
+        <main class="bg-white p-6 md:p-8 rounded-xl shadow-2xl">
+            <form id="notificationForm">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Notification Type:</label>
+                        <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0">
+                            <label class="custom-radio-label flex items-center p-3 border border-gray-300 rounded-md hover:border-indigo-500 cursor-pointer flex-1">
+                                <input type="radio" name="notificationType" value="EMAIL" id="typeEmail" class="form-radio h-4 w-4 text-indigo-600 focus:ring-indigo-500" checked>
+                                <span class="ml-3 text-sm font-medium text-gray-700">📧 Email</span>
+                            </label>
+                            <label class="custom-radio-label flex items-center p-3 border border-gray-300 rounded-md hover:border-indigo-500 cursor-pointer flex-1">
+                                <input type="radio" name="notificationType" value="SMS" id="typeSms" class="form-radio h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-3 text-sm font-medium text-gray-700">📱 SMS</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="recipientAddress" class="block text-sm font-semibold text-gray-700 mb-1">Recipient:</label>
+                        <input type="email" id="recipientAddress" name="recipientAddress" required
+                               class="mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               placeholder="Enter recipient's email address">
+                    </div>
+
+                    <div id="subjectGroup" class="mt-4">
+                        <label for="subject" class="block text-sm font-semibold text-gray-700 mb-1">Subject:</label>
+                        <input type="text" id="subject" name="subject"
+                               class="mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               placeholder="Enter email subject">
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-semibold text-gray-700 mb-1">Message:</label>
+                        <textarea id="message" name="message" rows="4" required
+                                  class="mt-1 block w-full px-3 py-2.5 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  placeholder="Type your notification message here..."></textarea>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-md text-xs space-y-1">
+                        <p class="font-bold">Important Notes on Demo Functionality:</p>
+                        <p><strong>Twilio (SMS):</strong> The backend integration is complete. However, live SMS sending might be limited by trial account restrictions (a paid account is typically needed for full functionality beyond initial credits). The system will correctly queue the SMS to the backend.</p>
+                        <p><strong>Conceptual Amazon SNS (SMS):</strong> This option in the dropdown below is for UI demonstration purposes. If this were a live SNS integration for SMS, it would currently be in AWS sandbox mode, restricting SMS delivery to verified phone numbers only, even though the backend integration logic would be functional.</p>
+                        <p class="italic text-yellow-700">(Note: The actual backend uses Twilio for SMS and AWS SES for Email as per the project plan.)</p>
+                    </div>
+
+                    <div>
+                        <label for="provider" class="block text-sm font-semibold text-gray-700 mb-1">Send via (Conceptual Provider):</label>
+                        <select id="provider" name="provider"
+                                class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
+                            <option selected>Default (Twilio for SMS / AWS SES for Email)</option>
+                            <option>Simulate: Amazon SNS (SMS)</option>
+                            <option>Simulate: httpSMS Provider</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="submit" id="sendButton"
+                                class="w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition duration-150 ease-in-out">
+                            <span id="buttonText">Send Notification</span>
+                            <span id="buttonSpinner" class="spinner ml-2 hidden"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div id="responseArea" class="mt-6 text-sm">
+                </div>
+        </main>
+
+        <footer class="text-center text-xs text-gray-500 mt-10 py-4">
+            <p>&copy; <span id="currentYear"></span> Masoom Kumar Choudhury. All rights reserved.</p>
+            </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Element Selectors ---
+            const notificationForm = document.getElementById('notificationForm');
+            const recipientAddressInput = document.getElementById('recipientAddress');
+            const subjectGroup = document.getElementById('subjectGroup');
+            const subjectInput = document.getElementById('subject');
+            const messageInput = document.getElementById('message');
+            const typeEmailRadio = document.getElementById('typeEmail');
+            const typeSmsRadio = document.getElementById('typeSms');
+            const sendButton = document.getElementById('sendButton');
+            const buttonText = document.getElementById('buttonText');
+            const buttonSpinner = document.getElementById('buttonSpinner');
+            const responseArea = document.getElementById('responseArea');
+            const currentYearSpan = document.getElementById('currentYear');
+
+            // --- Initial Setup ---
+            currentYearSpan.textContent = new Date().getFullYear();
+            updateFormForNotificationType(); // Set initial state based on checked radio
+
+            // --- Event Listeners ---
+            typeEmailRadio.addEventListener('change', updateFormForNotificationType);
+            typeSmsRadio.addEventListener('change', updateFormForNotificationType);
+
+            notificationForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                clearResponse();
+
+                // Basic Client-Side Validation
+                if (!recipientAddressInput.value.trim()) {
+                    displayResponse('Recipient address is required.', true);
+                    return;
+                }
+                if (typeEmailRadio.checked && !subjectInput.value.trim()) {
+                    displayResponse('Subject is required for email.', true);
+                    return;
+                }
+                if (!messageInput.value.trim()) {
+                    displayResponse('Message is required.', true);
+                    return;
+                }
+                if (typeEmailRadio.checked && !isValidEmail(recipientAddressInput.value.trim())) {
+                    displayResponse('Please enter a valid email address.', true);
+                    return;
+                }
+                // Basic phone validation (very loose)
+                if (typeSmsRadio.checked && !isValidPhone(recipientAddressInput.value.trim())) {
+                    displayResponse('Please enter a valid phone number (e.g., +1234567890).', true);
+                    return;
+                }
+
+
+                // Show Loading State
+                sendButton.disabled = true;
+                buttonText.textContent = 'Sending...';
+                buttonSpinner.classList.remove('hidden');
+
+                // Construct Payload
+                const payload = {
+                    userId: "ui-showcase-user-" + Date.now(), // Demo user ID, make it somewhat unique for logs
+                    type: typeEmailRadio.checked ? "EMAIL" : "SMS",
+                    recipientAddress: recipientAddressInput.value.trim(),
+                    message: messageInput.value.trim()
+                };
+
+                if (typeEmailRadio.checked) {
+                    payload.subject = subjectInput.value.trim();
+                }
+
+                // API Call
+                try {
+                    // **IMPORTANT**: Replace with your actual deployed API endpoint
+                    const apiEndpoint = 'https://masoomchoudhury.com/notification-service/notifications';
+                    
+                    const response = await fetch(apiEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) { // Typically 2xx status codes
+                        let successMessage = data.message || 'Notification request processed successfully.';
+                        if (data.notificationId) {
+                            successMessage += ` ID: ${data.notificationId}`;
+                        }
+                        displayResponse(successMessage, false);
+                        // notificationForm.reset(); // Optionally reset form
+                        // updateFormForNotificationType(); // Reset dynamic fields if form is reset
+                    } else {
+                        // Try to get a more specific error message from backend
+                        const errorMessage = data.detail || data.message || `Error: ${response.status} ${response.statusText}`;
+                        displayResponse(errorMessage, true);
+                    }
+
+                } catch (error) {
+                    console.error('API Call Error:', error);
+                    displayResponse('An unexpected error occurred. Please check the console.', true);
+                } finally {
+                    // Hide Loading State
+                    sendButton.disabled = false;
+                    buttonText.textContent = 'Send Notification';
+                    buttonSpinner.classList.add('hidden');
+                }
+            });
+
+            // --- Helper Functions ---
+            function updateFormForNotificationType() {
+                if (typeEmailRadio.checked) {
+                    subjectGroup.classList.remove('hidden');
+                    subjectInput.required = true;
+                    recipientAddressInput.placeholder = "Enter recipient's email address";
+                    recipientAddressInput.type = "email";
+                } else { // SMS selected
+                    subjectGroup.classList.add('hidden');
+                    subjectInput.required = false;
+                    subjectInput.value = ''; // Clear subject if switching to SMS
+                    recipientAddressInput.placeholder = "Enter recipient's phone number (e.g., +1234567890)";
+                    recipientAddressInput.type = "tel";
+                }
+            }
+
+            function displayResponse(message, isError) {
+                responseArea.innerHTML = ''; // Clear previous messages
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `p-3 rounded-md shadow-sm ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`;
+                messageDiv.textContent = message;
+                responseArea.appendChild(messageDiv);
+            }
+
+            function clearResponse() {
+                responseArea.innerHTML = '';
+            }
+
+            function isValidEmail(email) {
+                // Basic regex for email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            function isValidPhone(phone) {
+                // Very basic phone validation: at least 7 digits, may start with +
+                const phoneRegex = /^\+?[0-9]{7,}$/;
+                return phoneRegex.test(phone);
+            }
+
+        });
+    </script>
+
+</body>
+</html>
