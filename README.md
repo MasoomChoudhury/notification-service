@@ -1,5 +1,4 @@
-# Notification Hub Demo
-(Live Site: https://notify.masoomchoudhury.com)
+# Notification Hub Demo (Live Site: https://notify.masoomchoudhury.com)
 
 A multi-channel notification service built with Python, FastAPI, RabbitMQ, and SQLite, containerized with Docker. This project demonstrates the ability to integrate various third-party notification providers and manage asynchronous notification delivery.
 
